@@ -20,8 +20,11 @@
 #include "ShapeSkin.h"
 #include "Texture.h"
 #include "TextureMatrix.h"
-#include <fstream> 
-//#include "Frame.h"
+
+#include "StaticTrans.h" // temp
+#include "LocalSkele.h" // temp
+#include "PCHierarchy.h" // temp
+#include "LocalBind.h" // temp
 
 using namespace std;
 using glm::vec4;
@@ -54,6 +57,15 @@ double t, t0;
 bool drawFrenetFrames = false;
 
 int frameCount = 1; // default to 1, should be replaced by boneParser value
+
+
+
+// NEW ###########
+
+StaticTrans stat_trans;
+LocalSkele local_skele;
+PCHierarchy hierarchy;
+LocalBind local_bind;
 
 static void error_callback(int error, const char *description)
 {
@@ -408,12 +420,31 @@ void loadDataInputFile()
 			ss >> value;
 			mesh.push_back(value); // texture
 			dataInput.meshData.push_back(mesh);
-		} else if(key.compare("SKELETON") == 0) {
+		}
+		else if (key.compare("SKELETON") == 0) {
 			ss >> value;
 			dataInput.skeletonData = value;
 			BoneParser(dataInput.skeletonData);
-		} else {
+		}
+		else if (key.compare("STATICTRANS") == 0) {
+			ss >> value;
+			stat_trans.Parse(DATA_DIR, value);
+		}
+		else if (key.compare("LOCALSKELE") == 0) {
+			ss >> value;
+			local_skele.Parse(DATA_DIR, value);
+		}
+		else if (key.compare("PCHIERARCHY") == 0) {
+			ss >> value;
+			hierarchy.Parse(DATA_DIR, value);
+		}
+		else if (key.compare("LOCALBIND") == 0) {
+			ss >> value;
+			local_bind.Parse(DATA_DIR, value);
+		}
+		else {
 			cout << "Unkown key word: " << key << endl;
+			exit(1);
 		}
 	}
 	in.close();

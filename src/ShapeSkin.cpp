@@ -129,7 +129,7 @@ void ShapeSkin::loadAttachment(const std::string &filename)
 	//	}
 	//	cout << "\n";
 	//}
-	//exit(0);
+	//exit(1);
 	ifs.close();
 }
 

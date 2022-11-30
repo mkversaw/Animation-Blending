@@ -1,5 +1,3 @@
-#pragma once
-
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,8 +11,8 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-struct Bone {
-	glm::mat4 mat; // 4x4 rigid transformation matrix
-	Bone(glm::vec4& quatr, glm::vec3& pos);
-	void print();
+struct Anim {
+	//glm::mat4 mat;
+
+	
 };
