@@ -33,13 +33,16 @@ void StaticTrans::Parse(std::string DATA_DIR, std::string staticFile) {
 		vec4 currQuat;
 		vec3 currPos;
 
-		vector<Bone> currMatrices; // holds the current 8 "bones" (matrices)
+		vector<shared_ptr<Bone>> currMatrices; // holds the current 8 "bones" (matrices)
 
 		for (int i = 0; i < 8; i++) { // 8 matrices per line
 			ss >> currQuat.x >> currQuat.y >> currQuat.z >> currQuat.w; // rotations
 			ss >> currPos.x >> currPos.y >> currPos.z; // positions
 			//cout << currPos.x << " " << currPos.y << " " << currPos.z << "\n";
-			currMatrices.push_back(Bone(currQuat, currPos)); // push back the matrice
+
+			shared_ptr<Bone> currBone = make_shared<Bone>(currQuat, currPos);
+
+			currMatrices.push_back(currBone); // push back the matrice
 		}
 		attributes.push_back(currMatrices); // push back the 8 mats
 	}

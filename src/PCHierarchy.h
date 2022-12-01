@@ -15,24 +15,14 @@
 #include <vector>
 
 #include <string>
+#include "Joint.h"
 
-struct Joint {
-	int jointIdx; // if this is -1 then its a root joint!
-	int parentIdx;
-	std::string rotOrder;
-	std::string name;
 
-	Joint() {};
-	Joint(int jointIdx, int parentIdx, std::string rotOrder, std::string name) : jointIdx(jointIdx), parentIdx(parentIdx), rotOrder(rotOrder), name(name) {}
-};
 
 struct PCHierarchy {
 	PCHierarchy() {}
-	PCHierarchy(std::string DATA_DIR, std::string PCHierarchyFile);
 
-	std::vector<Joint> joints;
-
-	int jointCount;
-
-	void Parse(std::string DATA_DIR, std::string PCHierarchyFile);
+	int jointCount; // = boneCount
+	std::vector<std::shared_ptr<Joint>> joints;
+	void Parse(std::string& DATA_DIR, std::string& PCHierarchyFile, std::vector<std::shared_ptr<Joint>>& joints);
 };

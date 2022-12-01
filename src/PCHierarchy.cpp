@@ -10,13 +10,9 @@ using glm::vec4;
 
 using namespace std;
 
-PCHierarchy::PCHierarchy(std::string DATA_DIR, std::string PCHierarchyFile) {
-	Parse(DATA_DIR, PCHierarchyFile);
-}
-
-void PCHierarchy::Parse(std::string DATA_DIR, std::string PCHierarchyFile) {
+void PCHierarchy::Parse(std::string& DATA_DIR, std::string& PCHierarchyFile, std::vector<shared_ptr<Joint>>& joints) {
 	string value;
-
+	
 	ifstream ifs(DATA_DIR + PCHierarchyFile);
 	getline(ifs, value);
 	getline(ifs, value);
@@ -27,14 +23,22 @@ void PCHierarchy::Parse(std::string DATA_DIR, std::string PCHierarchyFile) {
 
 	//cout << "JC: " << jointCount << "\n";
 
-	while (getline(ifs, value)) { // each subsequent line
+	for(int i = 0; i < jointCount; i++) {
+		getline(ifs, value); // each subsequent line
 		stringstream ss(value);
+		
+		shared_ptr<Joint> currJoint = make_shared<Joint>();
+		
 
-		Joint currJoint;
-		ss >> currJoint.jointIdx >> currJoint.parentIdx >> currJoint.rotOrder >> currJoint.name;
+		ss >> currJoint->jointIdx >> currJoint->parentIdx >> currJoint->rotOrder >> currJoint->name;
+
+		if (currJoint->parentIdx != -1) { // not the root
+			joints[currJoint->parentIdx]->childrenIdx.push_back(currJoint->jointIdx); // add this joint as a child to its parent joint
+		}
+
 		joints.push_back(currJoint);
-		//cout << currJoint.jointIdx << " " << currJoint.parentIdx << " " << currJoint.name << "\n";
 	}
+
 
 	ifs.close(); // CLOSE THE STREAM !!!
 }

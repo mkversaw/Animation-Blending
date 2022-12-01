@@ -21,10 +21,8 @@
 #include "Texture.h"
 #include "TextureMatrix.h"
 
-#include "StaticTrans.h" // temp
-#include "LocalSkele.h" // temp
-#include "PCHierarchy.h" // temp
-#include "LocalBind.h" // temp
+#include "Anim.h"
+
 
 using namespace std;
 using glm::vec4;
@@ -62,10 +60,9 @@ int frameCount = 1; // default to 1, should be replaced by boneParser value
 
 // NEW ###########
 
-StaticTrans stat_trans;
-LocalSkele local_skele;
-PCHierarchy hierarchy;
-LocalBind local_bind;
+
+Anim anim;
+
 
 static void error_callback(int error, const char *description)
 {
@@ -381,6 +378,7 @@ void render()
 
 void loadDataInputFile()
 {
+	anim = Anim();
 	string filename = DATA_DIR + "input.txt";
 	ifstream in;
 	in.open(filename);
@@ -428,19 +426,19 @@ void loadDataInputFile()
 		}
 		else if (key.compare("STATICTRANS") == 0) {
 			ss >> value;
-			stat_trans.Parse(DATA_DIR, value);
+			//stat_trans.Parse(DATA_DIR, value);
 		}
 		else if (key.compare("LOCALSKELE") == 0) {
 			ss >> value;
-			local_skele.Parse(DATA_DIR, value);
+			anim.genStaticTransforms(DATA_DIR, value);
 		}
 		else if (key.compare("PCHIERARCHY") == 0) {
 			ss >> value;
-			hierarchy.Parse(DATA_DIR, value);
+			anim.genHierarchy(DATA_DIR, value);
 		}
 		else if (key.compare("LOCALBIND") == 0) {
 			ss >> value;
-			local_bind.Parse(DATA_DIR, value);
+			//local_bind.Parse(DATA_DIR, value);
 		}
 		else {
 			cout << "Unkown key word: " << key << endl;

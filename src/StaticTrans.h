@@ -25,11 +25,10 @@ struct StaticTrans {
 	//Bone Soff; // Scaling offset
 	//Bone Sp; // Scaling pivot
 	//Bone S; // Scaling
-
 	StaticTrans(){}
 	StaticTrans(std::string DATA_DIR, std::string staticFile);
 
-	std::vector<std::vector<Bone> > attributes;
+	std::vector<std::vector<std::shared_ptr<Bone> > > attributes;
 	int boneCount;
 
 	void Parse(std::string DATA_DIR, std::string staticFile);
