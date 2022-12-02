@@ -133,7 +133,7 @@ void ShapeSkin::loadAttachment(const std::string &filename)
 	ifs.close();
 }
 
-void ShapeSkin::init(Frame& bindFrame)
+void ShapeSkin::init()
 {
 	// Send the position array to the GPU
 	glGenBuffers(1, &posBufID);
@@ -155,9 +155,9 @@ void ShapeSkin::init(Frame& bindFrame)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
-	for (Bone& bone : bindFrame.bones) {
-		inverseBinds.push_back(inverse(bone.mat));
-	}
+	//for (Bone& bone : bindFrame.bones) {
+	//	inverseBinds.push_back(inverse(bone.mat));
+	//}
 
 	GLSL::checkError(GET_FILE_LINE);
 }
@@ -188,7 +188,8 @@ void ShapeSkin::update(int k, vector<shared_ptr<Frame>>& frames)
 
 	for (int i = 0; i < frames[0]->bones.size(); i++) { // for each bone
 		multmats.push_back(
-			(frames[k]->bones[i].mat) * inverseBinds[i]
+			(frames[k]->bones[i].mat) * inverse(frames[0]->bones[i].mat)
+			//(frames[k]->bones[i].mat) * inverseBinds[i]
 		);
 	}
 

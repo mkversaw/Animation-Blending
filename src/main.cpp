@@ -21,7 +21,7 @@
 #include "Texture.h"
 #include "TextureMatrix.h"
 
-#include "Anim.h"
+#include "BlendedAnim.h"
 
 
 using namespace std;
@@ -42,6 +42,7 @@ DataInput dataInput;
 GLFWwindow *window; // Main application window
 string RESOURCE_DIR = ""; // Where the shaders are loaded from
 string DATA_DIR = ""; // where the data are loaded from
+string DATA_DIR2 = ""; // where the data are loaded from
 bool keyToggles[256] = {false};
 
 shared_ptr<Camera> camera = NULL;
@@ -55,13 +56,13 @@ double t, t0;
 bool drawFrenetFrames = false;
 
 int frameCount = 1; // default to 1, should be replaced by boneParser value
-
+int fileCount = 0;
 
 
 // NEW ###########
 
 
-Anim anim;
+BlendedAnim blendAnim;
 
 
 static void error_callback(int error, const char *description)
@@ -143,8 +144,10 @@ void init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	for(auto shape : shapes) {
-		shape->init(*frames[0]);
+	for(auto shape : shapes) { // send in the bind frame to generate inverse bind mats
+		shape->init();
+		//shape->init(*frames[0]);
+		//shape->init(*blendAnim.anims[0]->frames[0]);
 	}
 	
 	progSimple->init();
@@ -184,41 +187,42 @@ void init()
 	GLSL::checkError(GET_FILE_LINE);
 }
 
-void BoneParser(string boneFile) {
-	string value;
-	int bones;
-
-	ifstream ifs(DATA_DIR + boneFile);
-	getline(ifs, value);
-	getline(ifs, value);
-	getline(ifs, value);
-	getline(ifs, value);
-	
-	stringstream temp(value);
-	std::string tempStr;
-	temp >> tempStr;
-	frameCount = stoi(tempStr);
-	temp >> tempStr;
-	bones = stoi(tempStr);
-
-	while (getline(ifs, value)) {
-		stringstream ss(value);
-		vec4 quatr;
-		vec3 pos;
-		shared_ptr<Frame> frame = make_shared<Frame>();
-
-		while (ss >> quatr.x) {
-			ss >> quatr.y >> quatr.z >> quatr.w;
-			ss >> pos.x >> pos.y >> pos.z;
-
-			Bone currBone(quatr, pos);
-			frame->bones.push_back(currBone);
-		}
-		frames.push_back(frame);
-	}
-
-	ifs.close();
-}
+//void BoneParser(string boneFile) {
+//	string value;
+//	int bones;
+//
+//	ifstream ifs(DATA_DIR + boneFile);
+//	getline(ifs, value);
+//	getline(ifs, value);
+//	getline(ifs, value);
+//	getline(ifs, value);
+//	
+//	stringstream temp(value);
+//	std::string tempStr;
+//	temp >> tempStr;
+//	frameCount = stoi(tempStr);
+//	temp >> tempStr;
+//	bones = stoi(tempStr);
+//
+//	while (getline(ifs, value)) {
+//		stringstream ss(value);
+//		vec4 quatr;
+//		vec3 pos;
+//		shared_ptr<Frame> frame = make_shared<Frame>();
+//
+//		while (ss >> quatr.x) {
+//			ss >> quatr.y >> quatr.z >> quatr.w;
+//			ss >> pos.x >> pos.y >> pos.z;
+//
+//			Bone currBone(quatr, pos);
+//			frame->bones.push_back(currBone);
+//		}
+//		frames.push_back(frame);
+//	}
+//
+//	ifs.close();
+//	anim.frames = frames;
+//}
 
 void drawFrenetFrame() {
 	float LINE_THICKNESS = 2.5f;
@@ -362,7 +366,8 @@ void render()
 		glUniform3f(progSkin->getUniform("ks"), 0.1f, 0.1f, 0.1f);
 		glUniform1f(progSkin->getUniform("s"), 200.0f);
 		shape->setProgram(progSkin);
-		shape->update(frame, frames);
+		shape->update(frame, frames); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//shape->update(frame, blendAnim.anims[0]->frames);
 		shape->draw(frame);
 		progSkin->unbind();
 
@@ -376,9 +381,10 @@ void render()
 	GLSL::checkError(GET_FILE_LINE);
 }
 
-void loadDataInputFile()
+void loadDataInputFile(string DATA_DIR)
 {
-	anim = Anim();
+	
+	shared_ptr<Anim> anim = make_shared<Anim>();
 	string filename = DATA_DIR + "input.txt";
 	ifstream in;
 	in.open(filename);
@@ -389,16 +395,16 @@ void loadDataInputFile()
 	cout << "Loading " << filename << endl;
 	
 	string line;
-	while(1) {
+	while (1) {
 		getline(in, line);
-		if(in.eof()) {
+		if (in.eof()) {
 			break;
 		}
-		if(line.empty()) {
+		if (line.empty()) {
 			continue;
 		}
 		// Skip comments
-		if(line.at(0) == '#') {
+		if (line.at(0) == '#') {
 			continue;
 		}
 		// Parse lines
@@ -406,23 +412,30 @@ void loadDataInputFile()
 		stringstream ss(line);
 		// key
 		ss >> key;
-		if(key.compare("TEXTURE") == 0) {
+		if (key.compare("TEXTURE") == 0) {
 			ss >> value;
-			dataInput.textureData.push_back(value);
-		} else if(key.compare("MESH") == 0) {
-			vector<string> mesh;
-			ss >> value;
-			mesh.push_back(value); // obj
-			ss >> value;
-			mesh.push_back(value); // skin
-			ss >> value;
-			mesh.push_back(value); // texture
-			dataInput.meshData.push_back(mesh);
+			if (fileCount == 0) {
+				dataInput.textureData.push_back(value);
+			}
+		}
+		else if (key.compare("MESH") == 0) {
+			if (fileCount == 0) {
+				vector<string> mesh;
+				ss >> value;
+				mesh.push_back(value); // obj
+				ss >> value;
+				mesh.push_back(value); // skin
+				ss >> value;
+				mesh.push_back(value); // texture
+				dataInput.meshData.push_back(mesh);
+			}
 		}
 		else if (key.compare("SKELETON") == 0) {
 			ss >> value;
 			dataInput.skeletonData = value;
-			BoneParser(dataInput.skeletonData);
+			anim->genBoneFrames(DATA_DIR, value);
+			frames = anim->frames;
+			frameCount = anim->frameCount;
 		}
 		else if (key.compare("STATICTRANS") == 0) {
 			ss >> value;
@@ -430,11 +443,11 @@ void loadDataInputFile()
 		}
 		else if (key.compare("LOCALSKELE") == 0) {
 			ss >> value;
-			anim.genStaticTransforms(DATA_DIR, value);
+			//anim.genStaticTransforms(DATA_DIR, value);
 		}
 		else if (key.compare("PCHIERARCHY") == 0) {
 			ss >> value;
-			anim.genHierarchy(DATA_DIR, value);
+			anim->genHierarchy(DATA_DIR, value);
 		}
 		else if (key.compare("LOCALBIND") == 0) {
 			ss >> value;
@@ -445,18 +458,26 @@ void loadDataInputFile()
 			exit(1);
 		}
 	}
+
+	fileCount++;
+	blendAnim.anims.push_back(anim);
 	in.close();
 }
 
 int main(int argc, char **argv)
 {
-	if(argc < 3) {
-		cout << "Usage: A2 <SHADER DIR> <DATA DIR>" << endl;
+	if(argc < 4) {
+		cout << "Usage: A2 <SHADER DIR> <DATA DIR1> <DATA DIR2>" << endl;
 		return 0;
 	}
 	RESOURCE_DIR = argv[1] + string("/");
 	DATA_DIR = argv[2] + string("/");
-	loadDataInputFile();
+	DATA_DIR2 = argv[3] + string("/");
+
+	blendAnim = BlendedAnim(); // !!!
+
+	loadDataInputFile(DATA_DIR);
+	//loadDataInputFile(DATA_DIR2);
 	
 	// Set error callback.
 	glfwSetErrorCallback(error_callback);
@@ -493,6 +514,7 @@ int main(int argc, char **argv)
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	// Initialize scene.
 	init();
+
 	// Loop until the user closes the window.
 	while(!glfwWindowShouldClose(window)) {
 		if(!glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {

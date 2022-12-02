@@ -22,7 +22,7 @@ public:
 	void loadMesh(const std::string &meshName);
 	void loadAttachment(const std::string &filename);
 	void setProgram(std::shared_ptr<Program> p) { prog = p; }
-	void init(Frame& bindFrame);
+	void init();
 	void update(int k, std::vector<std::shared_ptr<Frame>>& frames);
 	void draw(int k) const;
 	void setTextureFilename(const std::string &f) { textureFilename = f; }

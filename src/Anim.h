@@ -23,6 +23,11 @@ struct Anim {
 	std::shared_ptr<StaticTrans> stat_trans;
 	std::shared_ptr<LocalSkele> local_skele;
 	std::shared_ptr<LocalBind> local_bind;
+
+	std::vector<std::shared_ptr<Frame>> frames;
+
+
+	std::vector<std::shared_ptr<Frame>> parentSpaceFrames;
 	
 
 	std::vector<std::shared_ptr<Joint>> joints;
@@ -32,7 +37,13 @@ struct Anim {
 	void genHierarchy(std::string& DATA_DIR, std::string& PCHierarchyFile);
 	void genStaticTransforms(std::string& DATA_DIR, std::string& staticFile);
 
+	void genParentSpace();
+	void genBlended(int idx = 0);
+	void genBoneFrames(std::string& DATA_DIR, std::string& boneFile);
+
+
 	//void genWorldMats(int idx = -1);
 
+	int frameCount;
 	int boneCount;
 };
