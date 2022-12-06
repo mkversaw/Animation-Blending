@@ -12,7 +12,4 @@ MESH Jumping_Elvis_BodyGeo.obj Jumping_Elvis_BodyGeo_skin.txt body.jpg
 MESH Jumping_Elvis_MouthAnimGeo.obj Jumping_Elvis_MouthAnimGeo_skin.txt MouthMAP.png
 MESH Jumping_Elvis_EyesAnimGeo.obj Jumping_Elvis_EyesAnimGeo_skin.txt MouthMAP.png 
 MESH Jumping_Elvis_BrowsAnimGeo.obj Jumping_Elvis_BrowsAnimGeo_skin.txt MouthMAP.png 
-# PCHIERARCHY Jumping_hierarchy.txt
-# STATICTRANS Jumping_static_transforms.txt
-# LOCALSKELE Jumping_skel_local.txt
-# LOCALBIND Jumping_binding_pose_local.txt
+PCHIERARCHY Jumping_hierarchy.txt 

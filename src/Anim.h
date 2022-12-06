@@ -38,11 +38,12 @@ struct Anim {
 	void genStaticTransforms(std::string& DATA_DIR, std::string& staticFile);
 
 	void genParentSpace();
-	void genBlended(int idx = 0);
 	void genBoneFrames(std::string& DATA_DIR, std::string& boneFile);
 
 
 	//void genWorldMats(int idx = -1);
+
+	
 
 	int frameCount;
 	int boneCount;

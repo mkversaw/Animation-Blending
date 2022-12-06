@@ -146,8 +146,6 @@ void init()
 	
 	for(auto shape : shapes) { // send in the bind frame to generate inverse bind mats
 		shape->init();
-		//shape->init(*frames[0]);
-		//shape->init(*blendAnim.anims[0]->frames[0]);
 	}
 	
 	progSimple->init();
@@ -186,43 +184,6 @@ void init()
 	
 	GLSL::checkError(GET_FILE_LINE);
 }
-
-//void BoneParser(string boneFile) {
-//	string value;
-//	int bones;
-//
-//	ifstream ifs(DATA_DIR + boneFile);
-//	getline(ifs, value);
-//	getline(ifs, value);
-//	getline(ifs, value);
-//	getline(ifs, value);
-//	
-//	stringstream temp(value);
-//	std::string tempStr;
-//	temp >> tempStr;
-//	frameCount = stoi(tempStr);
-//	temp >> tempStr;
-//	bones = stoi(tempStr);
-//
-//	while (getline(ifs, value)) {
-//		stringstream ss(value);
-//		vec4 quatr;
-//		vec3 pos;
-//		shared_ptr<Frame> frame = make_shared<Frame>();
-//
-//		while (ss >> quatr.x) {
-//			ss >> quatr.y >> quatr.z >> quatr.w;
-//			ss >> pos.x >> pos.y >> pos.z;
-//
-//			Bone currBone(quatr, pos);
-//			frame->bones.push_back(currBone);
-//		}
-//		frames.push_back(frame);
-//	}
-//
-//	ifs.close();
-//	anim.frames = frames;
-//}
 
 void drawFrenetFrame() {
 	float LINE_THICKNESS = 2.5f;
@@ -383,7 +344,6 @@ void render()
 
 void loadDataInputFile(string DATA_DIR)
 {
-	
 	shared_ptr<Anim> anim = make_shared<Anim>();
 	string filename = DATA_DIR + "input.txt";
 	ifstream in;
@@ -395,11 +355,7 @@ void loadDataInputFile(string DATA_DIR)
 	cout << "Loading " << filename << endl;
 	
 	string line;
-	while (1) {
-		getline(in, line);
-		if (in.eof()) {
-			break;
-		}
+	while (getline(in, line)) {
 		if (line.empty()) {
 			continue;
 		}
@@ -407,11 +363,13 @@ void loadDataInputFile(string DATA_DIR)
 		if (line.at(0) == '#') {
 			continue;
 		}
+		cout << line << "\n";
 		// Parse lines
 		string key, value;
 		stringstream ss(line);
 		// key
 		ss >> key;
+
 		if (key.compare("TEXTURE") == 0) {
 			ss >> value;
 			if (fileCount == 0) {
@@ -434,22 +392,28 @@ void loadDataInputFile(string DATA_DIR)
 			ss >> value;
 			dataInput.skeletonData = value;
 			anim->genBoneFrames(DATA_DIR, value);
-			frames = anim->frames;
-			frameCount = anim->frameCount;
+			if (fileCount == 0) {
+				frames = anim->frames;
+				frameCount = anim->frameCount;
+			}
 		}
 		else if (key.compare("STATICTRANS") == 0) {
+			cout << "c\n\n";
 			ss >> value;
 			//stat_trans.Parse(DATA_DIR, value);
 		}
 		else if (key.compare("LOCALSKELE") == 0) {
+			cout << "c\n\n";
 			ss >> value;
 			//anim.genStaticTransforms(DATA_DIR, value);
 		}
 		else if (key.compare("PCHIERARCHY") == 0) {
 			ss >> value;
 			anim->genHierarchy(DATA_DIR, value);
+			cout << "genHMainPCH: " << fileCount << "\n";
 		}
 		else if (key.compare("LOCALBIND") == 0) {
+			cout << "c\n\n";
 			ss >> value;
 			//local_bind.Parse(DATA_DIR, value);
 		}
@@ -477,7 +441,7 @@ int main(int argc, char **argv)
 	blendAnim = BlendedAnim(); // !!!
 
 	loadDataInputFile(DATA_DIR);
-	//loadDataInputFile(DATA_DIR2);
+	loadDataInputFile(DATA_DIR2);
 	
 	// Set error callback.
 	glfwSetErrorCallback(error_callback);
@@ -514,6 +478,9 @@ int main(int argc, char **argv)
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	// Initialize scene.
 	init();
+
+
+	blendAnim.test();
 
 	// Loop until the user closes the window.
 	while(!glfwWindowShouldClose(window)) {
