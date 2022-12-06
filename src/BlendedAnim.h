@@ -5,7 +5,7 @@
 struct BlendedAnim {
 	std::vector<std::shared_ptr<Anim> > anims;
 
-	int frameCount = 15;// CHANGE THIS LATER
+	int frameCountBLENDED;
 	int boneCount;
 	std::vector<std::shared_ptr<Frame>> blendedFrames;
 

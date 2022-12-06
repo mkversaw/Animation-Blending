@@ -12,7 +12,6 @@ void Anim::genHierarchy(std::string& DATA_DIR, std::string& PCHierarchyFile) {
 
 	genParentSpace();
 
-	cout << "bazing\n";
 }
 
 void Anim::genStaticTransforms(std::string& DATA_DIR, std::string& staticFile) {
@@ -23,9 +22,6 @@ void Anim::genStaticTransforms(std::string& DATA_DIR, std::string& staticFile) {
 }
 
 void Anim::genParentSpace() {
-
-	cout << "testalksdjaksdkas\n";
-
 	parentSpaceFrames.resize(frames.size());
 	for (int i = 0; i < frames.size(); i++) {
 		parentSpaceFrames[i] = make_shared<Frame>(frames[i]->bones); // scuffed  (deep) copy construct

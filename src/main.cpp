@@ -55,14 +55,22 @@ double t, t0;
 
 bool drawFrenetFrames = false;
 
+
 int frameCount = 1; // default to 1, should be replaced by boneParser value
 int fileCount = 0;
 
+int frameTick = 0;
+
+bool useBlend = true;
 
 // NEW ###########
 
 
 BlendedAnim blendAnim;
+
+
+glm::mat3 movementMat;
+glm::vec3 movementVec = { 0,0,0 };
 
 
 static void error_callback(int error, const char *description)
@@ -75,12 +83,54 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 	if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
+
+	if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS) {
+		frameTick++;
+		frameTick = frameTick % (frameCount + 1);
+		cout << "frame: " << frameTick << " / " << frameCount << "\n";
+	}
+	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS) {
+		frameTick--;
+		frameTick = frameTick % (frameCount + 1);
+		cout << "frame: " << frameTick << " / " << frameCount << "\n";
+	}
+	else if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+	
+		useBlend = !useBlend;
+		if (useBlend) { // switch to blended framecount and frames
+			frameCount = blendAnim.frameCountBLENDED;
+			frames = blendAnim.blendedFrames;
+		}
+		else {
+			frameCount = blendAnim.anims[0]->frameCount;
+			frames = blendAnim.anims[0]->frames;
+		}
+		frameTick = frameTick % (frameCount + 1);
+
+		cout << "frame: " << frameTick << " / " << frameCount << "\n";
+	}
+	else if (key == GLFW_KEY_W) { // forward
+		movementVec.z += 10;
+		cout << "movementVec" << to_string(movementVec) << "\n";
+	}
+	else if (key == GLFW_KEY_S) { // back
+		movementVec.z -= 10;
+		cout << "movementVec" << to_string(movementVec) << "\n";
+	}
+	else if (key == GLFW_KEY_A) {
+		movementVec.x += 10;
+		cout << "movementVec" << to_string(movementVec) << "\n";
+	}
+	else if (key == GLFW_KEY_D) {
+		movementVec.x -= 10;
+		cout << "movementVec" << to_string(movementVec) << "\n";
+	}
 }
 
 static void char_callback(GLFWwindow *window, unsigned int key)
 {
 	keyToggles[key] = !keyToggles[key];
-
+	
 	for(const auto &shape : shapes) {
 		shape->getTextureMatrix()->update(key);
 	}
@@ -300,16 +350,18 @@ void render()
 
 	// Draw character
 	double fps = 30;
-	int frame = ((int)floor(t*fps)) % (frameCount + 1);
+	//frameTick = ((int)floor(t*fps)) % (frameCount + 1);
 	
-	if (frame == 0) {
-		frame = 1;
+	if (frameTick == 0) {
+		frameTick = 1;
 	}
-
+	//cout << frameTick << "\n";
 
 	if (drawFrenetFrames) {
-		drawBoneFrames(P, MV, frame);
+		drawBoneFrames(P, MV, frameTick);
 	}
+
+	MV->translate(movementVec);
 
 	for (const auto& shape : shapes) {
 		MV->pushMatrix();
@@ -327,9 +379,9 @@ void render()
 		glUniform3f(progSkin->getUniform("ks"), 0.1f, 0.1f, 0.1f);
 		glUniform1f(progSkin->getUniform("s"), 200.0f);
 		shape->setProgram(progSkin);
-		shape->update(frame, frames); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		shape->update(frameTick, frames); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//shape->update(frame, blendAnim.anims[0]->frames);
-		shape->draw(frame);
+		shape->draw(frameTick);
 		progSkin->unbind();
 
 		MV->popMatrix();
@@ -363,7 +415,7 @@ void loadDataInputFile(string DATA_DIR)
 		if (line.at(0) == '#') {
 			continue;
 		}
-		cout << line << "\n";
+		//cout << line << "\n";
 		// Parse lines
 		string key, value;
 		stringstream ss(line);
@@ -393,8 +445,7 @@ void loadDataInputFile(string DATA_DIR)
 			dataInput.skeletonData = value;
 			anim->genBoneFrames(DATA_DIR, value);
 			if (fileCount == 0) {
-				frames = anim->frames;
-				frameCount = anim->frameCount;
+				//frames = anim->frames;
 			}
 		}
 		else if (key.compare("STATICTRANS") == 0) {
@@ -410,7 +461,6 @@ void loadDataInputFile(string DATA_DIR)
 		else if (key.compare("PCHIERARCHY") == 0) {
 			ss >> value;
 			anim->genHierarchy(DATA_DIR, value);
-			cout << "genHMainPCH: " << fileCount << "\n";
 		}
 		else if (key.compare("LOCALBIND") == 0) {
 			cout << "c\n\n";
@@ -481,6 +531,11 @@ int main(int argc, char **argv)
 
 
 	blendAnim.test();
+	//frameCount = blendAnim.anims[0]->frameCount;
+	frameCount = blendAnim.frameCountBLENDED;
+	frames = blendAnim.blendedFrames;
+	cout << "#BFrames " << frames.size() << "\n";
+	cout << "FC: " << frameCount << "\n";
 
 	// Loop until the user closes the window.
 	while(!glfwWindowShouldClose(window)) {
