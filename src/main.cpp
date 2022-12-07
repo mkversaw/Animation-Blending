@@ -23,6 +23,9 @@
 
 #include "BlendedAnim.h"
 
+#include "Shape.h"
+#include "Component.h"
+
 
 using namespace std;
 using glm::vec4;
@@ -50,6 +53,11 @@ vector< shared_ptr<ShapeSkin> > shapes;
 map< string, shared_ptr<Texture> > textureMap;
 shared_ptr<Program> progSimple = NULL;
 shared_ptr<Program> progSkin = NULL;
+shared_ptr<Program> prog = NULL;
+
+shared_ptr<Texture> texture;
+
+
 vector<shared_ptr<Frame>> frames;
 double t, t0;
 
@@ -71,6 +79,14 @@ BlendedAnim blendAnim;
 
 glm::mat3 movementMat;
 glm::vec3 movementVec = { 0,0,0 };
+glm::vec3 rotationVec = { 0,0,0 };
+
+int handIdx = 0;
+pair<int, int> handIdxs;
+
+bool useleftHand = true;
+
+shared_ptr<Component> testShape = NULL;
 
 
 static void error_callback(int error, const char *description)
@@ -109,21 +125,55 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 
 		cout << "frame: " << frameTick << " / " << frameCount << "\n";
 	}
+
 	else if (key == GLFW_KEY_W) { // forward
+		//camera->moveForward();
 		movementVec.z += 10;
 		cout << "movementVec" << to_string(movementVec) << "\n";
+		camera->updatePos(movementVec);
 	}
 	else if (key == GLFW_KEY_S) { // back
+		//camera->moveBackward();
 		movementVec.z -= 10;
 		cout << "movementVec" << to_string(movementVec) << "\n";
+		camera->updatePos(movementVec);
 	}
 	else if (key == GLFW_KEY_A) {
+		//camera->moveLeft();
 		movementVec.x += 10;
 		cout << "movementVec" << to_string(movementVec) << "\n";
+		camera->updatePos(movementVec);
 	}
 	else if (key == GLFW_KEY_D) {
+		//camera->moveRight();
 		movementVec.x -= 10;
 		cout << "movementVec" << to_string(movementVec) << "\n";
+		camera->updatePos(movementVec);
+	}
+	else if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+		//handIdx--;
+		//handIdx = glm::clamp(handIdx, 0, 80);
+		//cout << "idx: " << handIdx << "\n";
+	}
+	else if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+		//handIdx++;
+		//handIdx = glm::clamp(handIdx, 0, 80);
+		//cout << "idx: " << handIdx << "\n";
+	}
+	else if (key == GLFW_KEY_P && action == GLFW_PRESS) { // PAUSE
+
+	}
+	else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // JUMP
+
+	}
+	else if (key == GLFW_KEY_H && action == GLFW_PRESS) { // toggle hand mat indxs
+		if (handIdx == handIdxs.first) {
+			handIdx = handIdxs.second;
+		}
+		else {
+			handIdx = handIdxs.first;
+		}
+		cout << "new handIdx: " << handIdx << "\n";
 	}
 }
 
@@ -140,7 +190,14 @@ static void cursor_position_callback(GLFWwindow* window, double xmouse, double y
 {
 	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 	if(state == GLFW_PRESS) {
+		//
 		camera->mouseMoved((float)xmouse, (float)ymouse);
+	}
+
+	state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+
+	if (state == GLFW_PRESS) {
+		//rotationVec.y = camera->rotations.x;
 	}
 }
 
@@ -157,6 +214,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		bool ctrl  = mods & GLFW_MOD_CONTROL;
 		bool alt   = mods & GLFW_MOD_ALT;
 		camera->mouseClicked((float)xmouse, (float)ymouse, shift, ctrl, alt);
+		//camera->mouseClicked2((float)xmouse, (float)ymouse);
 	}
 }
 
@@ -165,7 +223,7 @@ void init()
 	keyToggles[(unsigned)'c'] = true;
 	
 	camera = make_shared<Camera>();
-	
+	camera->updatePos(movementVec);
 	// Create shapes
 	for(const auto &mesh : dataInput.meshData) {
 		auto shape = make_shared<ShapeSkin>();
@@ -186,6 +244,8 @@ void init()
 	progSkin->setShaderNames(RESOURCE_DIR + "skin_vert.glsl", RESOURCE_DIR + "skin_frag.glsl");
 	progSkin->setVerbose(true);
 	
+
+
 	// Set background color
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	// Enable z-buffer test
@@ -214,6 +274,49 @@ void init()
 	progSkin->addUniform("kdTex");
 	progSkin->addUniform("T");
 	
+	//prog = make_shared<Program>();
+	//prog->setShaderNames(RESOURCE_DIR + "phong_vert.glsl", RESOURCE_DIR + "phong_frag.glsl");
+	//prog->init();
+	//prog->addUniform("P");
+	//prog->addUniform("MV");
+	//prog->addUniform("lightPos");
+	//prog->addUniform("ka");
+	//prog->addUniform("kd");
+	//prog->addUniform("ks");
+	//prog->addUniform("s");
+	//prog->addAttribute("aPos");
+	//prog->addAttribute("aNor");
+	//prog->setVerbose(false);
+
+	prog = make_shared<Program>();
+	prog->setShaderNames(RESOURCE_DIR + "tex_vert.glsl", RESOURCE_DIR + "tex_frag.glsl");
+	prog->init();
+	prog->setVerbose(true);
+	prog->addUniform("P");
+	prog->addUniform("MV");
+	prog->addAttribute("aPos");
+	prog->addAttribute("aTex");
+	prog->addUniform("texture0");
+	prog->setVerbose(false);
+
+	texture = make_shared<Texture>();
+	texture->setFilename(RESOURCE_DIR + "amogus.png");
+	//cout << RESOURCE_DIR + "metal_texture_15_by_wojtar_stock.jpg" << "\n";
+	texture->init();
+	texture->setUnit(0);
+	texture->setWrapModes(GL_REPEAT, GL_REPEAT);
+	//exit(0);
+
+	testShape = make_shared<Component>();
+	testShape->shape = make_shared<Shape>();
+	testShape->shape->loadMesh(RESOURCE_DIR + "amogus.obj");
+	testShape->shape->init();
+
+	//testShape->meshTrans = { -20,0,0};
+	testShape->kd = { 1,0,0 };
+	testShape->scale = { 15,15,15 };
+	testShape->angles = {0, 0, 90};
+	//testShape->scale = { 1,1,1 };
 	// Bind the texture to unit 1.
 	int unit = 1;
 	progSkin->bind();
@@ -360,9 +463,26 @@ void render()
 	if (drawFrenetFrames) {
 		drawBoneFrames(P, MV, frameTick);
 	}
-
+	prog->bind();
+	texture->bind(prog->getUniform("texture0"));
+	glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
+	
+	MV->rotate(rotationVec.y, vec3(0, 1, 0));
 	MV->translate(movementVec);
 
+	if (handIdx != -1) {
+		MV->pushMatrix();
+
+		MV->multMatrix(frames[frameTick]->bones[handIdx].mat);
+		testShape->draw(*MV, prog, t);
+
+		MV->popMatrix();
+	}
+
+	prog->unbind();
+
+	
+	
 	for (const auto& shape : shapes) {
 		MV->pushMatrix();
 
@@ -531,6 +651,9 @@ int main(int argc, char **argv)
 
 
 	blendAnim.test();
+	handIdxs = blendAnim.getHandIdx();
+	handIdx = handIdxs.first;
+
 	//frameCount = blendAnim.anims[0]->frameCount;
 	frameCount = blendAnim.frameCountBLENDED;
 	frames = blendAnim.blendedFrames;

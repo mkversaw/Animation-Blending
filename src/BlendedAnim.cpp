@@ -81,3 +81,10 @@ void BlendedAnim::test() {
 
 
 }
+
+std::pair<int,int> BlendedAnim::getHandIdx() {
+	pair<int, int> idxs;
+	idxs.first = anims[0]->hierarchy->handIdx_LEFT;
+	idxs.second = anims[0]->hierarchy->handIdx_RIGHT;
+	return idxs;
+}

@@ -23,6 +23,8 @@ struct PCHierarchy {
 	PCHierarchy() {}
 
 	int jointCount; // = boneCount
+	int handIdx_LEFT = -1;
+	int handIdx_RIGHT = -1;
 	std::vector<std::shared_ptr<Joint>> joints;
 	void Parse(std::string& DATA_DIR, std::string& PCHierarchyFile, std::vector<std::shared_ptr<Joint>>& joints);
 };

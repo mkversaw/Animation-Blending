@@ -18,4 +18,5 @@ struct BlendedAnim {
 
 	float getAlpha(int currFrame);
 	void test();
+	std::pair<int,int> getHandIdx();
 };
