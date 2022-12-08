@@ -60,7 +60,7 @@ private:
 
 	float pitchLowBound;
 	float pitchUpBound;
-
+	float sf = 300;
 	float fovLowBound;
 	float fovUpBound;
 	float fovFactor;

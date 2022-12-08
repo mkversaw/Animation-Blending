@@ -116,7 +116,9 @@ void Camera::mouseMoved(float x, float y)
 			translations.y += translations.z * tfactor * dv.y;
 			break;
 		case Camera::SCALE:
-			translations.z *= (1.0f - sfactor * dv.y);
+			//translations.z *= (1.0f - sfactor * dv.y);
+			sf *= (1.0f - sfactor * dv.y);
+			//std::cout << sf << "\n";
 			break;
 	}
 	mousePrev = mouseCurr;
@@ -130,10 +132,10 @@ void Camera::applyProjectionMatrix(std::shared_ptr<MatrixStack> P) const
 
 void Camera::applyViewMatrix(std::shared_ptr<MatrixStack> MV) const
 {
-	MV->translate(translations);
-	MV->rotate(rotations.y, glm::vec3(1.0f, 0.0f, 0.0f));
-	MV->rotate(rotations.x, glm::vec3(0.0f, 1.0f, 0.0f));
-
+	//MV->translate(translations);
+	//MV->rotate(rotations.y, glm::vec3(1.0f, 0.0f, 0.0f));
+	//MV->rotate(rotations.x, glm::vec3(0.0f, 1.0f, 0.0f));
+	
 	// eye: cam pos
 	// target: cam pos + "forward" dir
 	// up: the Y vec (0,1,0)
@@ -159,4 +161,29 @@ void Camera::applyViewMatrix(std::shared_ptr<MatrixStack> MV) const
 	//
 	//
 	//MV->multMatrix(glm::lookAt(position + objectsPos, position + objectsPos + test, up));
+
+
+	//glm::vec4 cp;
+	//float hoverRadius = 10.0f;
+	//
+	//cp.x = hoverRadius * sin(glm::radians(rotations.x));
+	////cp.y = 1;
+	//cp.z = hoverRadius * cos(glm::radians(rotations.x));
+	////cp.w = 1;
+	//
+	//glm::vec3 cameraPosition = glm::vec3(objectsPos.x + cp.x, objectsPos.y + 300.0f, objectsPos.z + cp.z + 20.0f);
+	//
+	//glm::vec3 focusTarget = glm::normalize(glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z) - objectsPos);
+	//glm::vec3 rightVec = glm::normalize(glm::cross(focusTarget, glm::vec3(0.0f, 1.0f, 0.0f)));
+	//glm::vec3 cameraUp = glm::normalize(glm::cross(rightVec,focusTarget));
+	//glm::mat4 newMat = glm::lookAt(cameraPosition, focusTarget, cameraUp);
+	//
+	//MV->multMatrix(newMat);
+	
+	glm::vec3 cameraPosition = objectsPos + 2.0f*glm::vec3(sf * sin(rotations.x), sf, sf * cos(rotations.x));
+	glm::vec3 cameraTarget = objectsPos;
+	glm::vec3 cameraUp = glm::vec3(0, 1, 0);
+
+	glm::mat4 newMat = glm::lookAt(cameraPosition, cameraTarget, cameraUp);
+	MV->multMatrix(newMat);
 }

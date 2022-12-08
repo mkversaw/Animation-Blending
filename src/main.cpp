@@ -197,7 +197,8 @@ static void cursor_position_callback(GLFWwindow* window, double xmouse, double y
 	state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 
 	if (state == GLFW_PRESS) {
-		//rotationVec.y = camera->rotations.x;
+		
+		rotationVec.y = camera->rotations.x;
 	}
 }
 
@@ -467,8 +468,19 @@ void render()
 	texture->bind(prog->getUniform("texture0"));
 	glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
 	
-	MV->rotate(rotationVec.y, vec3(0, 1, 0));
+	//MV->translate(movementVec);
+	//cout << to_string(MV->topMatrix()) << "\n\n";
+
+	//cout << to_string(MV->topMatrix()[2]) << "\n";
+
 	MV->translate(movementVec);
+
+
+	//MV->rotate(camera->rotations.x, vec3(0, 1, 0));
+
+	//MV->rotate(forward.x,vec3(1,0,0));
+	//MV->rotate(forward.y,vec3(0,1,0));
+	//MV->rotate(forward.z,vec3(0,0,1));
 
 	if (handIdx != -1) {
 		MV->pushMatrix();
