@@ -71,6 +71,11 @@ int frameTick = 0;
 
 bool useBlend = true;
 
+bool temppp = false;
+
+
+bool paused = false;
+
 // NEW ###########
 
 
@@ -128,7 +133,16 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 
 	else if (key == GLFW_KEY_W) { // forward
 		//camera->moveForward();
-		movementVec.z += 10;
+		//movementVec.z += 10;
+		if (temppp) {
+			movementVec.x -= 10 * sin(rotationVec.y);
+			movementVec.z -= 10 * cos(rotationVec.y);
+		}
+		else {
+			movementVec.x += 10 * sin(rotationVec.y);
+			movementVec.z += 10 * cos(rotationVec.y);
+		}
+
 		cout << "movementVec" << to_string(movementVec) << "\n";
 		camera->updatePos(movementVec);
 	}
@@ -161,7 +175,7 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 		//cout << "idx: " << handIdx << "\n";
 	}
 	else if (key == GLFW_KEY_P && action == GLFW_PRESS) { // PAUSE
-
+		paused = !paused;
 	}
 	else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // JUMP
 
@@ -174,6 +188,13 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 			handIdx = handIdxs.first;
 		}
 		cout << "new handIdx: " << handIdx << "\n";
+	}
+	else if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+		cout << "F\n";
+		//camera->sf = -camera->sf;
+		//camera->rotations.x = -camera->rotations.x;
+		temppp = !temppp;
+		//camera->rotations.x += 3.14;
 	}
 }
 
@@ -192,13 +213,18 @@ static void cursor_position_callback(GLFWwindow* window, double xmouse, double y
 	if(state == GLFW_PRESS) {
 		//
 		camera->mouseMoved((float)xmouse, (float)ymouse);
+		if (paused) {
+			rotationVec.y = camera->rotations.x;
+		}
 	}
 
 	state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 
 	if (state == GLFW_PRESS) {
 		
-		rotationVec.y = camera->rotations.x;
+		camera->mouseClicked2((float)xmouse, (float)ymouse);
+		//rotationVec.y = camera->charRotation;
+		//rotationVec.y = camera->rotations.x;
 	}
 }
 
@@ -216,6 +242,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		bool alt   = mods & GLFW_MOD_ALT;
 		camera->mouseClicked((float)xmouse, (float)ymouse, shift, ctrl, alt);
 		//camera->mouseClicked2((float)xmouse, (float)ymouse);
+	}
+
+	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+
 	}
 }
 
@@ -473,11 +503,19 @@ void render()
 
 	//cout << to_string(MV->topMatrix()[2]) << "\n";
 
+	//MV->translate({ 0,0,0 });
 	MV->translate(movementVec);
+	//MV->rotate(rotationVec.y,vec3(0,1,0));
+	
+	MV->rotate(rotationVec.y,vec3(0,1,0));
+
+	if (temppp) {
+		MV->rotate(3.14, vec3(0, 1, 0));
+	}
 
 
 	//MV->rotate(camera->rotations.x, vec3(0, 1, 0));
-
+	
 	//MV->rotate(forward.x,vec3(1,0,0));
 	//MV->rotate(forward.y,vec3(0,1,0));
 	//MV->rotate(forward.z,vec3(0,0,1));

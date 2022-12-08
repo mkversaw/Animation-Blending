@@ -24,12 +24,14 @@ Camera::Camera() :
 	fovFactor(1 * (float)M_PI / 180)
 {
 	// pitch angle, capped between -60 and 60 degrees
-	if (rotations.y > pitchUpBound) {
-		rotations.y = pitchUpBound;
-	}
-	else if (rotations.y < pitchLowBound) {
-		rotations.y = pitchLowBound;
-	}
+	//if (rotations.y > pitchUpBound) {
+	//	rotations.y = pitchUpBound;
+	//}
+	//else if (rotations.y < pitchLowBound) {
+	//	rotations.y = pitchLowBound;
+	//}
+
+	rotations.y = 1;
 
 	forward = { sin(rotations.x),0.0f,cos(rotations.x) };
 
@@ -79,9 +81,28 @@ void Camera::mouseClicked(float x, float y, bool shift, bool ctrl, bool alt)
 
 void Camera::mouseClicked2(float x, float y)
 {
-	mousePrev.x = x;
-	mousePrev.y = y;
-	state = Camera::ROTATE;
+	glm::vec2 mouseCurr(x, y);
+	glm::vec2 dv = mouseCurr - mousePrev;
+
+	rotations.y += rfactor * dv.y;
+	if (rotations.y > pitchUpBound) {
+		rotations.y = pitchUpBound;
+	}
+	else if (rotations.y < pitchLowBound) {
+		rotations.y = pitchLowBound;
+	}
+
+
+	//charRotation += 0.05f * rfactor * dv.x;
+	//
+	//if (charRotation <= 0.0f) {
+	//	charRotation = 2.0f * (float)M_PI;
+	//}
+	//else if (charRotation >= 2.0f * (float)M_PI) {
+	//	charRotation = 0.0f;
+	//}
+	//
+	//std::cout << charRotation << "\n";
 }
 
 void Camera::mouseMoved(float x, float y)
@@ -90,22 +111,26 @@ void Camera::mouseMoved(float x, float y)
 	glm::vec2 dv = mouseCurr - mousePrev;
 	switch(state) {
 		case Camera::ROTATE:
-			rotations += rfactor * dv;
+			rotations.x += rfactor * dv.x;
+
+			//rotations += rfactor * dv;
 
 			// pitch angle, capped between -60 and 60 degrees
-			if (rotations.y > pitchUpBound) {
-				rotations.y = pitchUpBound;
-			}
-			else if (rotations.y < pitchLowBound) {
-				rotations.y = pitchLowBound;
-			}
+			//if (rotations.y > pitchUpBound) {
+			//	rotations.y = pitchUpBound;
+			//}
+			//else if (rotations.y < pitchLowBound) {
+			//	rotations.y = pitchLowBound;
+			//}
 
-			//if (rotations.x < 0) {
-			//	rotations.x = 0;
-			//}
-			//else if (rotations.x > 2 * M_PI) {
-			//	rotations.x = 2 * M_PI;
-			//}
+			if (rotations.x < 0) {
+				//rotations.x = 0;
+				rotations.x = 2 * M_PI;
+			}
+			else if (rotations.x > 2 * M_PI) {
+				//rotations.x = 2 * M_PI;
+				rotations.x = 0;
+			}
 
 			forward = { sin(rotations.x),0.0f,cos(rotations.x) };
 
@@ -180,10 +205,14 @@ void Camera::applyViewMatrix(std::shared_ptr<MatrixStack> MV) const
 	//
 	//MV->multMatrix(newMat);
 	
-	glm::vec3 cameraPosition = objectsPos + 2.0f*glm::vec3(sf * sin(rotations.x), sf, sf * cos(rotations.x));
-	glm::vec3 cameraTarget = objectsPos;
-	glm::vec3 cameraUp = glm::vec3(0, 1, 0);
 
+	//glm::vec3 temp = glm::vec3(objectsPos.x * sin(charRotation), objectsPos.y, objectsPos.z * cos(charRotation));
+	glm::vec3 temp = objectsPos;
+	glm::vec3 cameraPosition = temp + 2.0f*glm::vec3(-sf * sin(rotations.x), sf_y * rotations.y, -sf * cos(rotations.x));
+	
+	glm::vec3 cameraTarget = temp;
+	glm::vec3 cameraUp = glm::vec3(0, 1, 0);
+	//std::cout << rotations.x << "\n";
 	glm::mat4 newMat = glm::lookAt(cameraPosition, cameraTarget, cameraUp);
 	MV->multMatrix(newMat);
 }

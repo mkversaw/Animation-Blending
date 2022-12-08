@@ -38,6 +38,9 @@ public:
 
 	void Camera::updatePos(glm::vec3 pos);
 	glm::vec2 rotations;
+
+	float charRotation = 0.0f;
+	float sf = 300.0f;
 private:
 	float aspect;
 	float fovy;
@@ -60,14 +63,15 @@ private:
 
 	float pitchLowBound;
 	float pitchUpBound;
-	float sf = 300;
+	
+	float sf_y = 300;
 	float fovLowBound;
 	float fovUpBound;
 	float fovFactor;
 
 	float distFromPlayerHOR = 250.0f;
 	float distFromPlayerVERT = 50.0f;
-
+	
 	glm::vec3 objectsPos;
 };
 
