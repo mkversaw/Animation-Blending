@@ -37,7 +37,7 @@ void BlendedAnim::genBlendedFrame(std::shared_ptr<Frame>& currFrame, int animIdx
 
 float BlendedAnim::getAlpha(int currFrame) { // for anim0, currFrame should always be >= than framesToBlendFor
 	//cout << "I_frame: " << currFrame << "\n";
-	float frame = (1.0f - (1.0f / framesToBlendFor * (currFrame - framesToBlendFor)) );
+	float frame = (1.0f - (1.0f / framesToBlendFor2 * (currFrame - framesToBlendFor2)) );
 	frame = glm::clamp(frame, 0.0f, 1.0f); // min 0, max 1
 	//cout << "factor: " << frame << "\n";
 	return frame; 
@@ -54,7 +54,7 @@ void BlendedAnim::test() {
 		frameCountBLENDED++;
 	}
 	
-	cout << "anim0 frames: " << blendedFrames.size() << "\n";
+	//cout << "anim0 frames: " << blendedFrames.size() << "\n";
 	prev = blendedFrames.size();
 	//blendedFrames = anims[1]->frames;
 	//frameCountBLENDED = anims[1]->frameCount;
@@ -67,7 +67,7 @@ void BlendedAnim::test() {
 		frameCountBLENDED++;
 	}
 
-	cout << "blended frames: " << blendedFrames.size() - prev << "\n";
+	//cout << "blended frames: " << blendedFrames.size() - prev << "\n";
 	prev = blendedFrames.size();
 
 	for (int i = framesToBlendFor; i < anims[1]->frameCount; i++) {
@@ -75,7 +75,7 @@ void BlendedAnim::test() {
 		blendedFrames.push_back(currFrame);
 		frameCountBLENDED++;
 	}
-	cout << "anim1 frames: " << blendedFrames.size() - prev << "\n";
+	//cout << "anim1 frames: " << blendedFrames.size() - prev << "\n";
 
 	frameCountBLENDED--; // important but i dont know why
 
@@ -85,11 +85,68 @@ void BlendedAnim::test() {
 void BlendedAnim::test2(int currFrameIdx) { 
 	blendedFrames2.clear();
 	blendedFrames2.push_back(make_shared<Frame>(anims[0]->frames[0]->bones)); // DUMMY FRAME (will be skipped anyways!)
-	framesToBlendFor = min(0.5 * anims[0]->frameCount, 0.5 * anims[1]->frameCount);
+	framesToBlendFor2 = min(0.5 * anims[0]->frameCount, 0.5 * anims[1]->frameCount);
+	
+	frameCountBLENDED2 = 0;
 
 	int jumpAnimIdx = 0;
-	for (int i = 0; i < framesToBlendFor; i++) { // use frames from  currFrameIdx to framesTOBlendFOr
+	for (int i = 0; i < framesToBlendFor2; i++) { // use frames from  currFrameIdx to framesTOBlendFOr
 		
+		int runAnimIdx = (currFrameIdx + i) % anims[0]->frameCount;
+	
+		if (runAnimIdx == 0) { // dont use the bind pose frame!
+			runAnimIdx += 1;
+		}
+	
+		jumpAnimIdx++;
+	
+	
+		shared_ptr<Frame> currFrame = make_shared<Frame>();
+		genBlendedFrame(currFrame, runAnimIdx, jumpAnimIdx);
+		blendedFrames2.push_back(currFrame);
+		frameCountBLENDED2++;
+	}
+
+
+
+
+	//cout << "blendedFrames: " << frameCountBLENDED2 << "\n";
+	
+
+
+
+	for (int i = jumpAnimIdx; i < anims[1]->frameCount; i++) { // add the rest of the jump frames
+		shared_ptr<Frame> currFrame = make_shared<Frame>(anims[1]->frames[i]->bones); // scuffed deep copy
+		blendedFrames2.push_back(currFrame);
+		frameCountBLENDED2++;
+	}
+
+	//for (int i = framesToBlendFor2 * 2; i < anims[0]->frameCount; i++) { // add the rest of the jump frames
+	//	int runAnimIdx = (framesToBlendFor2 * 2) - i;
+	//
+	//	if (runAnimIdx == 0) {
+	//		runAnimIdx = 1;
+	//	}
+	//	
+	//	shared_ptr<Frame> currFrame = make_shared<Frame>();
+	//	genBlendedFrame(currFrame, runAnimIdx, jumpAnimIdx);
+	//	blendedFrames2.push_back(currFrame);
+	//	frameCountBLENDED2++;
+	//}
+
+	//cout << "frameCountBLENDED2: " << frameCountBLENDED2 << "\n";
+}
+
+void BlendedAnim::noBlendTest2(int currFrameIdx) {
+	blendedFrames2.clear();
+	blendedFrames2.push_back(make_shared<Frame>(anims[0]->frames[0]->bones)); // DUMMY FRAME (will be skipped anyways!)
+	framesToBlendFor2 = min(0.5 * anims[0]->frameCount, 0.5 * anims[1]->frameCount);
+
+	frameCountBLENDED2 = 0;
+
+	int jumpAnimIdx = 0;
+	for (int i = 0; i < framesToBlendFor2; i++) { // use frames from  currFrameIdx to framesTOBlendFOr
+
 		int runAnimIdx = (currFrameIdx + i) % anims[0]->frameCount;
 
 		if (runAnimIdx == 0) { // dont use the bind pose frame!
@@ -97,13 +154,12 @@ void BlendedAnim::test2(int currFrameIdx) {
 		}
 
 		jumpAnimIdx++;
-
-
-		shared_ptr<Frame> currFrame = make_shared<Frame>();
-		genBlendedFrame(currFrame, runAnimIdx, jumpAnimIdx);
+	
+		shared_ptr<Frame> currFrame = make_shared<Frame>(anims[0]->frames[runAnimIdx]->bones); // scuffed deep copy
 		blendedFrames2.push_back(currFrame);
 		frameCountBLENDED2++;
 	}
+
 
 	for (int i = jumpAnimIdx; i < anims[1]->frameCount; i++) { // add the rest of the jump frames
 		shared_ptr<Frame> currFrame = make_shared<Frame>(anims[1]->frames[i]->bones); // scuffed deep copy

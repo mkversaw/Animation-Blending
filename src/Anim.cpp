@@ -9,7 +9,7 @@ void Anim::genHierarchy(std::string& DATA_DIR, std::string& PCHierarchyFile) {
 	hierarchy = make_shared<PCHierarchy>();
 	hierarchy->Parse(DATA_DIR, PCHierarchyFile, joints);
 	boneCount = hierarchy->jointCount;
-
+	//cout << boneCount << "askldjaklsdklaskldaslk\n";
 	genParentSpace();
 
 }
@@ -55,7 +55,7 @@ void Anim::genBoneFrames(std::string& DATA_DIR, std::string& boneFile) {
 	getline(ifs, value);
 	getline(ifs, value);
 	getline(ifs, value);
-
+	cout << value << "\n";
 	stringstream temp(value);
 	std::string tempStr;
 	temp >> tempStr;
@@ -80,6 +80,7 @@ void Anim::genBoneFrames(std::string& DATA_DIR, std::string& boneFile) {
 	}
 
 	ifs.close();
+
 }
 
 

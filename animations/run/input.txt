@@ -7,9 +7,9 @@
 # Lines for textures in automatically generated input file could be wrong when there are multiple textures, please modify them manually.
 TEXTURE file1.jpg
 TEXTURE MouthMAP.png
+SKELETON Run_skel.txt
 MESH Run_Elvis_BodyGeo.obj Run_Elvis_BodyGeo_skin.txt file1.jpg 
 MESH Run_Elvis_MouthAnimGeo.obj Run_Elvis_MouthAnimGeo_skin.txt MouthMAP.png 
 MESH Run_Elvis_EyesAnimGeo.obj Run_Elvis_EyesAnimGeo_skin.txt MouthMAP.png
 MESH Run_Elvis_BrowsAnimGeo.obj Run_Elvis_BrowsAnimGeo_skin.txt MouthMAP.png 
-SKELETON Run_skel.txt
 PCHIERARCHY Run_hierarchy.txt 

@@ -74,7 +74,12 @@ bool useBlend = true;
 bool temppp = false;
 
 
-bool paused = false;
+bool paused = true;
+
+bool moveForward = false;
+
+
+bool currentlyBlending = false;
 
 // NEW ###########
 
@@ -131,21 +136,28 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 		cout << "frame: " << frameTick << " / " << frameCount << "\n";
 	}
 
-	else if (key == GLFW_KEY_W) { // forward
+	if (key == GLFW_KEY_W && action == GLFW_PRESS)  { // forward
 		//camera->moveForward();
 		//movementVec.z += 10;
-		if (temppp) {
-			movementVec.x -= 10 * sin(rotationVec.y);
-			movementVec.z -= 10 * cos(rotationVec.y);
-		}
-		else {
-			movementVec.x += 10 * sin(rotationVec.y);
-			movementVec.z += 10 * cos(rotationVec.y);
-		}
-
-		cout << "movementVec" << to_string(movementVec) << "\n";
-		camera->updatePos(movementVec);
+		moveForward = true;
+		//if (temppp) {
+		//	movementVec.x -= 10 * sin(rotationVec.y);
+		//	movementVec.z -= 10 * cos(rotationVec.y);
+		//}
+		//else {
+		//	movementVec.x += 10 * sin(rotationVec.y);
+		//	movementVec.z += 10 * cos(rotationVec.y);
+		//}
+		//camera->updatePos(movementVec);
+		//cout << "movementVec" << to_string(movementVec) << "\n";
+		
 	}
+
+	if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+		moveForward = false;
+	}
+
+
 	else if (key == GLFW_KEY_S) { // back
 		//camera->moveBackward();
 		//movementVec.z -= 10;
@@ -177,8 +189,17 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 	else if (key == GLFW_KEY_P && action == GLFW_PRESS) { // PAUSE
 		paused = !paused;
 	}
-	else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // JUMP
+	if (key == GLFW_KEY_SPACE) { // JUMP
+		if (!currentlyBlending) {
+			currentlyBlending = true;
+			t = 0;
+			blendAnim.test2(frameTick + 1);
+			frameTick = 0;
+			frames = blendAnim.blendedFrames2;
+			frameCount = blendAnim.frameCountBLENDED2;
 
+			//cout << "THIS FAR!\n";
+		}
 	}
 	else if (key == GLFW_KEY_H && action == GLFW_PRESS) { // toggle hand mat indxs
 		if (handIdx == handIdxs.first) {
@@ -263,7 +284,7 @@ void init()
 		shape->loadMesh(DATA_DIR + mesh[0]);
 		shape->loadAttachment(DATA_DIR + mesh[1]);
 		shape->setTextureFilename(mesh[2]);
-		shape->init();
+		
 	}
 	
 	// For drawing the grid, etc.
@@ -286,9 +307,9 @@ void init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	//for(auto shape : shapes) { // send in the bind frame to generate inverse bind mats
-	//	
-	//}
+	for(auto shape : shapes) { // send in the bind frame to generate inverse bind mats
+		shape->init();
+	}
 	
 	progSimple->init();
 	progSimple->addUniform("P");
@@ -418,11 +439,23 @@ void render()
 	// Update time.
 	double t1 = glfwGetTime();
 	float dt = (float)(t1 - t0);
-	if(keyToggles[(unsigned)' ']) { // THIS IS TOGGLING WITH SPACE
+	if(keyToggles[(unsigned)'p']) { // THIS IS TOGGLING WITH SPACE
 		t += dt;
 	}
 	t0 = t1;
-	
+	if (moveForward) {
+		cout << rotationVec.y;
+		if (temppp) {
+			movementVec.x -= 10 * sin(rotationVec.y);
+			movementVec.z -= 10 * cos(rotationVec.y);
+		}
+		else {
+			movementVec.x += 10 * sin(rotationVec.y);
+			movementVec.z += 10 * cos(rotationVec.y);
+		}
+		camera->updatePos(movementVec);
+	}
+
 	// Get current frame buffer size.
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -485,13 +518,13 @@ void render()
 
 	// Draw character
 	double fps = 30;
-	//frameTick = ((int)floor(t*fps)) % (frameCount + 1);
+	frameTick = ((int)floor(t*fps)) % (frameCount + 1);
 	
 	if (frameTick == 0) {
 		frameTick = 1;
 	}
 	//cout << frameTick << "\n";
-
+	
 	if (drawFrenetFrames) {
 		drawBoneFrames(P, MV, frameTick);
 	}
@@ -563,6 +596,20 @@ void render()
 	MV->popMatrix();
 	P->popMatrix();
 
+	//cout << frameTick << "/" << frameCount << "\n";
+
+	if (currentlyBlending && frameTick == frameCount) {
+		//cout << "return to normal!\n";
+		currentlyBlending = false;
+		t = 0;
+		
+		frames = blendAnim.anims[0]->frames;
+		frameCount = blendAnim.anims[0]->frameCount;
+	}
+
+
+
+
 	GLSL::checkError(GET_FILE_LINE);
 }
 
@@ -588,7 +635,7 @@ void loadDataInputFile(string DATA_DIR)
 			continue;
 		}
 		//cout << line << "\n";
-		// Parse lines
+		// Parse lines`
 		string key, value;
 		stringstream ss(line);
 		// key
@@ -613,9 +660,13 @@ void loadDataInputFile(string DATA_DIR)
 			}
 		}
 		else if (key.compare("SKELETON") == 0) {
+			cout << "hi\n";
 			ss >> value;
+			cout << value << "\n";
 			dataInput.skeletonData = value;
 			anim->genBoneFrames(DATA_DIR, value);
+			
+			
 			if (fileCount == 0) {
 				//frames = anim->frames;
 			}
@@ -633,6 +684,7 @@ void loadDataInputFile(string DATA_DIR)
 		else if (key.compare("PCHIERARCHY") == 0) {
 			ss >> value;
 			anim->genHierarchy(DATA_DIR, value);
+			blendAnim.boneCount = anim->boneCount;
 		}
 		else if (key.compare("LOCALBIND") == 0) {
 			cout << "c\n\n";
@@ -702,13 +754,22 @@ int main(int argc, char **argv)
 	init();
 
 
+	
+
 	blendAnim.test();
 	handIdxs = blendAnim.getHandIdx();
 	handIdx = handIdxs.first;
 
+	//blendAnim.test2(5);
+
 	//frameCount = blendAnim.anims[0]->frameCount;
-	frameCount = blendAnim.frameCountBLENDED;
-	frames = blendAnim.blendedFrames;
+	
+	//frames = blendAnim.blendedFrames; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//frameCount = blendAnim.frameCountBLENDED;
+
+	frames = blendAnim.anims[0]->frames;
+	frameCount = blendAnim.anims[0]->frameCount;
+
 	cout << "#BFrames " << frames.size() << "\n";
 	cout << "FC: " << frameCount << "\n";
 
