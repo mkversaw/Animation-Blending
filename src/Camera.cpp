@@ -141,13 +141,36 @@ void Camera::mouseMoved(float x, float y)
 			translations.y += translations.z * tfactor * dv.y;
 			break;
 		case Camera::SCALE:
-			//translations.z *= (1.0f - sfactor * dv.y);
-			sf *= (1.0f - sfactor * dv.y);
-			//std::cout << sf << "\n";
+			translations.z *= (1.0f - sfactor * dv.y);
+			//sf *= (1.0f - sfactor * dv.y);
+			//sf_y *= (1.0f - sfactor * dv.y);
+			//sf_y = 100;
+			//offset += dv.y * 2.0f * glm::vec3(0, 1, 0);
+			if (dv.y < 0) {
+				zoomIn();
+			}
+			else {
+				zoomOut();
+			}
+			
+			
 			break;
 	}
 	mousePrev = mouseCurr;
 }
+
+void Camera::zoomIn() {
+	if (fovy > fovLowBound) {
+		fovy -= fovFactor;
+	}
+}
+
+void Camera::zoomOut() {
+	if (fovy < fovUpBound) {
+		fovy += fovFactor;
+	}
+}
+
 
 void Camera::applyProjectionMatrix(std::shared_ptr<MatrixStack> P) const
 {
@@ -208,7 +231,7 @@ void Camera::applyViewMatrix(std::shared_ptr<MatrixStack> MV) const
 
 	//glm::vec3 temp = glm::vec3(objectsPos.x * sin(charRotation), objectsPos.y, objectsPos.z * cos(charRotation));
 	glm::vec3 temp = objectsPos;
-	glm::vec3 cameraPosition = temp + 2.0f*glm::vec3(-sf * sin(rotations.x), sf_y * rotations.y, -sf * cos(rotations.x));
+	glm::vec3 cameraPosition =  temp + 2.0f*glm::vec3(-sf * sin(rotations.x), sf_y * rotations.y, -sf * cos(rotations.x));
 	
 	glm::vec3 cameraTarget = temp;
 	glm::vec3 cameraUp = glm::vec3(0, 1, 0);

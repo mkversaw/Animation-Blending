@@ -115,7 +115,7 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 		frameTick = frameTick % (frameCount + 1);
 		cout << "frame: " << frameTick << " / " << frameCount << "\n";
 	}
-	else if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+	else if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
 	
 		useBlend = !useBlend;
 		if (useBlend) { // switch to blended framecount and frames
@@ -148,21 +148,21 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 	}
 	else if (key == GLFW_KEY_S) { // back
 		//camera->moveBackward();
-		movementVec.z -= 10;
-		cout << "movementVec" << to_string(movementVec) << "\n";
-		camera->updatePos(movementVec);
+		//movementVec.z -= 10;
+		//cout << "movementVec" << to_string(movementVec) << "\n";
+		//camera->updatePos(movementVec);
 	}
 	else if (key == GLFW_KEY_A) {
 		//camera->moveLeft();
-		movementVec.x += 10;
-		cout << "movementVec" << to_string(movementVec) << "\n";
-		camera->updatePos(movementVec);
+		//movementVec.x += 10;
+		//cout << "movementVec" << to_string(movementVec) << "\n";
+		//camera->updatePos(movementVec);
 	}
 	else if (key == GLFW_KEY_D) {
 		//camera->moveRight();
-		movementVec.x -= 10;
-		cout << "movementVec" << to_string(movementVec) << "\n";
-		camera->updatePos(movementVec);
+		//movementVec.x -= 10;
+		//cout << "movementVec" << to_string(movementVec) << "\n";
+		//camera->updatePos(movementVec);
 	}
 	else if (key == GLFW_KEY_I && action == GLFW_PRESS) {
 		//handIdx--;
@@ -213,7 +213,7 @@ static void cursor_position_callback(GLFWwindow* window, double xmouse, double y
 	if(state == GLFW_PRESS) {
 		//
 		camera->mouseMoved((float)xmouse, (float)ymouse);
-		if (paused) {
+		if(!paused) {
 			rotationVec.y = camera->rotations.x;
 		}
 	}
@@ -263,6 +263,7 @@ void init()
 		shape->loadMesh(DATA_DIR + mesh[0]);
 		shape->loadAttachment(DATA_DIR + mesh[1]);
 		shape->setTextureFilename(mesh[2]);
+		shape->init();
 	}
 	
 	// For drawing the grid, etc.
@@ -285,9 +286,9 @@ void init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	for(auto shape : shapes) { // send in the bind frame to generate inverse bind mats
-		shape->init();
-	}
+	//for(auto shape : shapes) { // send in the bind frame to generate inverse bind mats
+	//	
+	//}
 	
 	progSimple->init();
 	progSimple->addUniform("P");
@@ -421,7 +422,7 @@ void render()
 		t += dt;
 	}
 	t0 = t1;
-
+	
 	// Get current frame buffer size.
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -522,7 +523,8 @@ void render()
 
 	if (handIdx != -1) {
 		MV->pushMatrix();
-
+		//vec4 temp = frames[frameTick]->bones[handIdx].mat[3];
+		//MV->translate(vec3(temp));
 		MV->multMatrix(frames[frameTick]->bones[handIdx].mat);
 		testShape->draw(*MV, prog, t);
 
@@ -532,7 +534,7 @@ void render()
 	prog->unbind();
 
 	
-	
+	progSkin->bind();
 	for (const auto& shape : shapes) {
 		MV->pushMatrix();
 
@@ -540,7 +542,7 @@ void render()
 		// TODO: implement
 
 		// Draw skin
-		progSkin->bind();
+		
 		textureMap[shape->getTextureFilename()]->bind(progSkin->getUniform("kdTex"));
 		glLineWidth(1.0f); // for wireframe
 		glUniformMatrix4fv(progSkin->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
@@ -552,11 +554,11 @@ void render()
 		shape->update(frameTick, frames); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//shape->update(frame, blendAnim.anims[0]->frames);
 		shape->draw(frameTick);
-		progSkin->unbind();
+		
 
 		MV->popMatrix();
 	}
-	
+	progSkin->unbind();
 	// Pop matrix stacks.
 	MV->popMatrix();
 	P->popMatrix();
@@ -598,7 +600,7 @@ void loadDataInputFile(string DATA_DIR)
 				dataInput.textureData.push_back(value);
 			}
 		}
-		else if (key.compare("MESH") == 0) {
+		else if (key.compare("MESH") == 0) { // HERE IS THE PROBLEM?
 			if (fileCount == 0) {
 				vector<string> mesh;
 				ss >> value;

@@ -82,6 +82,36 @@ void BlendedAnim::test() {
 
 }
 
+void BlendedAnim::test2(int currFrameIdx) { 
+	blendedFrames2.clear();
+	blendedFrames2.push_back(make_shared<Frame>(anims[0]->frames[0]->bones)); // DUMMY FRAME (will be skipped anyways!)
+	framesToBlendFor = min(0.5 * anims[0]->frameCount, 0.5 * anims[1]->frameCount);
+
+	int jumpAnimIdx = 0;
+	for (int i = 0; i < framesToBlendFor; i++) { // use frames from  currFrameIdx to framesTOBlendFOr
+		
+		int runAnimIdx = (currFrameIdx + i) % anims[0]->frameCount;
+
+		if (runAnimIdx == 0) { // dont use the bind pose frame!
+			runAnimIdx += 1;
+		}
+
+		jumpAnimIdx++;
+
+
+		shared_ptr<Frame> currFrame = make_shared<Frame>();
+		genBlendedFrame(currFrame, runAnimIdx, jumpAnimIdx);
+		blendedFrames2.push_back(currFrame);
+		frameCountBLENDED2++;
+	}
+
+	for (int i = jumpAnimIdx; i < anims[1]->frameCount; i++) { // add the rest of the jump frames
+		shared_ptr<Frame> currFrame = make_shared<Frame>(anims[1]->frames[i]->bones); // scuffed deep copy
+		blendedFrames2.push_back(currFrame);
+		frameCountBLENDED2++;
+	}
+}
+
 std::pair<int,int> BlendedAnim::getHandIdx() {
 	pair<int, int> idxs;
 	idxs.first = anims[0]->hierarchy->handIdx_LEFT;

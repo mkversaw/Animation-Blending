@@ -41,6 +41,13 @@ public:
 
 	float charRotation = 0.0f;
 	float sf = 300.0f;
+
+	glm::vec3 offset = { 0,0,0 };
+
+
+	void Camera::zoomIn();
+	void Camera::zoomOut();
+
 private:
 	float aspect;
 	float fovy;
