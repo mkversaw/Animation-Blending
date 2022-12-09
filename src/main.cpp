@@ -444,7 +444,7 @@ void render()
 	}
 	t0 = t1;
 	if (moveForward) {
-		cout << rotationVec.y;
+		//cout << rotationVec.y;
 		if (temppp) {
 			movementVec.x -= 10 * sin(rotationVec.y);
 			movementVec.z -= 10 * cos(rotationVec.y);
@@ -493,9 +493,9 @@ void render()
 	progSimple->bind();
 	glUniformMatrix4fv(progSimple->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
 	glUniformMatrix4fv(progSimple->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
-	float gridSizeHalf = 200.0f;
-	int gridNx = 11;
-	int gridNz = 11;
+	float gridSizeHalf = 1600.0f;
+	int gridNx = 41;
+	int gridNz = 41;
 	glLineWidth(1);
 	glColor3f(0.8f, 0.8f, 0.8f);
 	glBegin(GL_LINES);
@@ -518,7 +518,9 @@ void render()
 
 	// Draw character
 	double fps = 30;
-	frameTick = ((int)floor(t*fps)) % (frameCount + 1);
+	if (!paused) {
+		frameTick = ((int)floor(t * fps)) % (frameCount + 1);
+	}
 	
 	if (frameTick == 0) {
 		frameTick = 1;
@@ -756,7 +758,7 @@ int main(int argc, char **argv)
 
 	
 
-	blendAnim.test();
+	//blendAnim.test();
 	handIdxs = blendAnim.getHandIdx();
 	handIdx = handIdxs.first;
 
@@ -770,8 +772,8 @@ int main(int argc, char **argv)
 	frames = blendAnim.anims[0]->frames;
 	frameCount = blendAnim.anims[0]->frameCount;
 
-	cout << "#BFrames " << frames.size() << "\n";
-	cout << "FC: " << frameCount << "\n";
+	//cout << "#BFrames " << frames.size() << "\n";
+	//cout << "FC: " << frameCount << "\n";
 
 	// Loop until the user closes the window.
 	while(!glfwWindowShouldClose(window)) {

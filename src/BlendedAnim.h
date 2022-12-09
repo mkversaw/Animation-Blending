@@ -15,11 +15,14 @@ struct BlendedAnim {
 	int framesToBlendFor;
 	int framesToBlendFor2;
 
+	int alphaNum = 0;
+
 	BlendedAnim() {}
 
-	void genBlendedFrame(std::shared_ptr<Frame>& currFrame, int animIdx0, int animIdx1, int currBoneIdx = 0);
+	void genBlendedFrame(std::shared_ptr<Frame>& currFrame, int animIdx0, int animIdx1, int currBoneIdx = 0, bool LTOR = true);
 
 	float getAlpha(int currFrame);
+	
 	void test();
 	void test2(int currFrameIdx);
 	void noBlendTest2(int currFrameIdx);
