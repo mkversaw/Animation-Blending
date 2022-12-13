@@ -10,6 +10,7 @@ struct BlendedAnim {
 	int boneCount;
 	std::vector<std::shared_ptr<Frame>> blendedFrames;
 	std::vector<std::shared_ptr<Frame>> blendedFrames2;
+	std::vector<std::shared_ptr<Frame>> notBlendedFrames;
 
 	int startBlendFrame;
 	int framesToBlendFor;

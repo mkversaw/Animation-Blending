@@ -112,45 +112,44 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 
 	if (key == GLFW_KEY_PERIOD && action == GLFW_PRESS) {
 		frameTick++;
-		frameTick = frameTick % (frameCount + 1);
+		frameTick = frameTick % (frameCount);
+		if (frameTick == 0) {
+			frameTick++;
+		}
 		cout << "frame: " << frameTick << " / " << frameCount << "\n";
 	}
 	else if (key == GLFW_KEY_COMMA && action == GLFW_PRESS) {
 		frameTick--;
-		frameTick = frameTick % (frameCount + 1);
+		frameTick = frameTick % (frameCount);
+		if (frameTick == 0) {
+			frameTick++;
+		}
 		cout << "frame: " << frameTick << " / " << frameCount << "\n";
 	}
 	else if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
 	
-		useBlend = !useBlend;
-		if (useBlend) { // switch to blended framecount and frames
-			frameCount = blendAnim.frameCountBLENDED;
-			frames = blendAnim.blendedFrames;
+		
+		if (currentlyBlending) {
+			useBlend = !useBlend;
+			if (useBlend) { // switch to blended framecount and frames
+				//frameCount = blendAnim.frameCountBLENDED;
+				frames = blendAnim.blendedFrames2;
+				cout << "blending\n";
+			}
+			else {
+				frames = blendAnim.notBlendedFrames;
+				cout << "no blending\n";
+				//frameCount = blendAnim.anims[0]->frameCount;
+				//frames = blendAnim.anims[0]->frames;
+			}
 		}
-		else {
-			frameCount = blendAnim.anims[0]->frameCount;
-			frames = blendAnim.anims[0]->frames;
-		}
-		frameTick = frameTick % (frameCount + 1);
+		//frameTick = frameTick % (frameCount + 1);
 
-		cout << "frame: " << frameTick << " / " << frameCount << "\n";
+		//cout << "frame: " << frameTick << " / " << frameCount << "\n";
 	}
 
 	if (key == GLFW_KEY_W && action == GLFW_PRESS)  { // forward
-		//camera->moveForward();
-		//movementVec.z += 10;
-		moveForward = true;
-		//if (temppp) {
-		//	movementVec.x -= 10 * sin(rotationVec.y);
-		//	movementVec.z -= 10 * cos(rotationVec.y);
-		//}
-		//else {
-		//	movementVec.x += 10 * sin(rotationVec.y);
-		//	movementVec.z += 10 * cos(rotationVec.y);
-		//}
-		//camera->updatePos(movementVec);
-		//cout << "movementVec" << to_string(movementVec) << "\n";
-		
+		moveForward = true;	
 	}
 
 	if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
@@ -662,9 +661,9 @@ void loadDataInputFile(string DATA_DIR)
 			}
 		}
 		else if (key.compare("SKELETON") == 0) {
-			cout << "hi\n";
+			//cout << "hi\n";
 			ss >> value;
-			cout << value << "\n";
+			//cout << value << "\n";
 			dataInput.skeletonData = value;
 			anim->genBoneFrames(DATA_DIR, value);
 			
@@ -726,7 +725,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	// Create a windowed mode window and its OpenGL context.
-	window = glfwCreateWindow(640, 480, "Miles Versaw", NULL, NULL);
+	window = glfwCreateWindow(640, 480, "Miles Versaw: Blended Animations", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
 		return -1;
