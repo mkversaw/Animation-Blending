@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Animation Blending by Miles Versaw</h1>
+
+<video width="640" height="480" controls>
+    <source src="media/presentation_video.mp4" type="video/mp4">
+  This browser does not support the video tag :(
+</video> 
+
+<h2> Overview </h2>
+
+<p>
+    For this project I created a program that takes two mixamo animations and smoothly blends the transition between them.
+</p>
+
+<p>
+    I extract the hierarchical, skeletal, and skinning data from the animation files using fbx-extract and then use that information to reconstruct each frame.
+    The hierarchy data allows each joint to be stored in a tree structure with the joint names allowing for unique properties for some joints e.g. the hands or head.
+</p>
+ 
+<p>
+    Blending occurs whenever the user enters or exits a state e.g. running to jumping or jumping to running.
+    Taking some frames from the animation currently playing and the first few of the next animation allows for smooth transitions between actions.
+    Because the actions are occuring in real time it is also important to consider the current frame number of the animation playing, to ensure the blended frames loop around if necessary.
+</p>
+
+<h2> Resources Used </h2> 
+
+<ul>
+    <li>glm v0.9.9.8</li>
+    <li>glfw v3.3.6</li>
+    <li>glew v2.1.0</li>
+    <li>tinyobjloader v2.0.0</li>
+    <li>fbx-extract</li>
+    <li>Mixamo Big Vegas fbx and animations</li>
+    <li>https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf</li> 
+
+</ul>
+
+</body>
+</html>
